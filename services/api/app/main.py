@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from base64 import urlsafe_b64decode, urlsafe_b64encode
 from datetime import UTC, datetime
+import os
 from typing import Annotated
 
 from fastapi import Depends, FastAPI, Header, Query, Request, Response, status
@@ -59,14 +60,22 @@ app = FastAPI(
     version="0.1.0",
     description="Local FastAPI backend for the 井周智修 MVP demo.",
 )
+
+DEFAULT_CORS_ORIGINS = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "http://localhost:3001",
+    "http://127.0.0.1:3001",
+    "https://fortunes-manhole-demo.vercel.app",
+]
+CORS_ALLOW_ORIGINS = [
+    origin.strip()
+    for origin in os.getenv("CORS_ALLOW_ORIGINS", "").split(",")
+    if origin.strip()
+]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",
-        "http://127.0.0.1:3000",
-        "http://localhost:3001",
-        "http://127.0.0.1:3001",
-    ],
+    allow_origins=DEFAULT_CORS_ORIGINS + CORS_ALLOW_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

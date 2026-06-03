@@ -41,6 +41,19 @@ scripts/check-demo.sh
 - Swagger UI: `http://127.0.0.1:8000/docs`
 - OpenAPI JSON: `http://127.0.0.1:8000/openapi.json`
 
+线上客户演示地址：
+
+- Web Demo: `https://fortunes-manhole-demo.vercel.app`
+- FastAPI Backend: `https://fortunes-manhole-api.vercel.app`
+- Hosted OpenAPI JSON: `https://fortunes-manhole-api.vercel.app/openapi.json`
+
+当前线上 Web Demo 已配置：
+
+```text
+NEXT_PUBLIC_API_BASE_URL=https://fortunes-manhole-api.vercel.app/api/v1
+NEXT_PUBLIC_USE_MOCK=false
+```
+
 固定客户演示路线：
 
 ```text
@@ -56,6 +69,31 @@ scripts/check-demo.sh
 ```
 
 如果前端提示“请先启动后端服务”，先确认 `scripts/start-backend.sh` 正在运行，并且 `http://127.0.0.1:8000/openapi.json` 可访问。
+
+## Vercel Deployment
+
+前端项目：
+
+```bash
+vercel apps/web --prod --yes --name fortunes-manhole-demo
+```
+
+后端项目：
+
+```bash
+vercel project add fortunes-manhole-api
+vercel . --prod --yes --project fortunes-manhole-api -A vercel.backend.json
+```
+
+更新前端生产环境变量后需要重新部署前端：
+
+```bash
+vercel env add NEXT_PUBLIC_API_BASE_URL production --value https://fortunes-manhole-api.vercel.app/api/v1 --yes --no-sensitive --cwd apps/web
+vercel env add NEXT_PUBLIC_USE_MOCK production --value false --yes --no-sensitive --cwd apps/web
+vercel apps/web --prod --yes --name fortunes-manhole-demo
+```
+
+说明：Vercel 后端当前使用 FastAPI serverless function 和进程内 seed/mock 状态，适合客户演示；服务冷启动或实例切换后会回到 seed 数据，不作为持久化生产 API。
 
 ## Local MVP
 
