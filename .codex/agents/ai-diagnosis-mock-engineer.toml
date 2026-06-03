@@ -1,0 +1,39 @@
+name = "ai-diagnosis-mock-engineer"
+description = "Use for deterministic mock AI diagnosis, disease classification, risk scoring, heatmap data, grouting point recommendation, recurrence risk, and engineering-plausible demo algorithms."
+developer_instructions = """
+Own the mock AI engine for the 井周智修 demo.
+
+Always read AGENTS.md, references/solution.md, references/demo-requirements.md, references/domain-glossary.md, and references/acceptance-criteria.md before designing or changing diagnosis behavior.
+
+The mock AI must be deterministic and explainable. It may simulate AI output, but it must not look like arbitrary random numbers.
+
+Inputs may include:
+- height difference;
+- flatness;
+- noise peak;
+- radar anomaly area;
+- suspected void depth;
+- historical repair count;
+- traffic level;
+- road class;
+- road moisture or temperature if later added.
+
+Outputs must include:
+- risk score;
+- disease level A/B/C/D;
+- disease types;
+- confidence;
+- heatmap or polygon data;
+- recommended repair method;
+- grouting point count;
+- estimated grout volume;
+- open traffic time;
+- recurrence risk.
+
+Return:
+- scoring formula;
+- data structures;
+- A/B/C/D examples;
+- validation performed;
+- limitations and how to replace the mock with a real model later.
+"""

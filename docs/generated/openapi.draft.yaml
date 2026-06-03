@@ -1,0 +1,1462 @@
+openapi: 3.1.0
+info:
+  title: 井周智修 Demo API Draft
+  version: 0.1.0-draft
+  description: |
+    OpenAPI draft for the 井周智修 demo.
+
+    Scope:
+    - Supports dashboard -> map -> manhole detail -> diagnosis -> plan -> simulation -> acceptance -> demo-script.
+    - Demo mode may run without auth, but the long-lived contract reserves Bearer auth.
+    - JSON fields use camelCase and are intentionally decoupled from database schema.
+servers:
+  - url: http://localhost:8000/api/v1
+    description: Local FastAPI server
+security:
+  - bearerAuth: []
+  - {}
+tags:
+  - name: Dashboard
+  - name: Map
+  - name: Manholes
+  - name: Diagnosis
+  - name: Plan
+  - name: Simulation
+  - name: Acceptance
+  - name: Demo Script
+paths:
+  /dashboard/summary:
+    get:
+      tags: [Dashboard]
+      summary: Get dashboard summary
+      operationId: getDashboardSummary
+      parameters:
+        - $ref: '#/components/parameters/ProjectId'
+        - name: roadId
+          in: query
+          schema:
+            type: string
+        - name: updatedSince
+          in: query
+          schema:
+            type: string
+            format: date-time
+      responses:
+        '200':
+          description: Dashboard summary
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/XRequestId'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DashboardSummary'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /map/manholes:
+    get:
+      tags: [Map]
+      summary: Get map manhole features
+      operationId: getMapManholes
+      parameters:
+        - $ref: '#/components/parameters/ProjectId'
+        - name: bbox
+          in: query
+          description: minLon,minLat,maxLon,maxLat
+          schema:
+            type: string
+        - name: riskLevel
+          in: query
+          schema:
+            $ref: '#/components/schemas/RiskLevel'
+        - name: pipelineType
+          in: query
+          schema:
+            $ref: '#/components/schemas/PipelineType'
+        - name: trafficLevel
+          in: query
+          schema:
+            $ref: '#/components/schemas/TrafficLevel'
+        - name: hasDiagnosis
+          in: query
+          schema:
+            type: boolean
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 500
+            minimum: 1
+            maximum: 1000
+      responses:
+        '200':
+          description: Map features
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/XRequestId'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MapManholeFeatureCollection'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /manholes:
+    get:
+      tags: [Manholes]
+      summary: Search manholes
+      operationId: listManholes
+      parameters:
+        - $ref: '#/components/parameters/ProjectId'
+        - name: roadId
+          in: query
+          schema:
+            type: string
+        - name: riskLevel
+          in: query
+          schema:
+            $ref: '#/components/schemas/RiskLevel'
+        - name: diseaseLevel
+          in: query
+          schema:
+            $ref: '#/components/schemas/DiseaseLevel'
+        - name: pipelineType
+          in: query
+          schema:
+            $ref: '#/components/schemas/PipelineType'
+        - name: trafficLevel
+          in: query
+          schema:
+            $ref: '#/components/schemas/TrafficLevel'
+        - name: status
+          in: query
+          schema:
+            $ref: '#/components/schemas/ManholeStatus'
+        - name: sort
+          in: query
+          schema:
+            type: string
+            example: riskScore:desc,lastInspectionAt:desc
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+            default: 20
+            minimum: 1
+            maximum: 100
+        - name: pageToken
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Paginated manhole list
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/XRequestId'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ManholeListResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /manholes/{manholeId}:
+    get:
+      tags: [Manholes]
+      summary: Get manhole detail
+      operationId: getManholeById
+      parameters:
+        - $ref: '#/components/parameters/ManholeId'
+        - name: include
+          in: query
+          description: Optional lightweight embedded summaries
+          schema:
+            type: string
+            example: diagnosis,plan,acceptance
+      responses:
+        '200':
+          description: Manhole detail
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/XRequestId'
+            ETag:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ManholeDetail'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/ManholeNotFound'
+
+  /manholes/{manholeId}/diagnosis:
+    get:
+      tags: [Diagnosis]
+      summary: Get current diagnosis
+      operationId: getDiagnosis
+      parameters:
+        - $ref: '#/components/parameters/ManholeId'
+      responses:
+        '200':
+          description: Current diagnosis
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/XRequestId'
+            ETag:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Diagnosis'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/DiagnosisNotFound'
+    post:
+      tags: [Diagnosis]
+      summary: Generate or reuse current diagnosis
+      operationId: generateDiagnosis
+      parameters:
+        - $ref: '#/components/parameters/ManholeId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DiagnosisRequest'
+      responses:
+        '200':
+          description: Existing diagnosis reused
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/XRequestId'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Diagnosis'
+        '201':
+          description: Diagnosis created
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/XRequestId'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Diagnosis'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/ManholeNotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+
+  /manholes/{manholeId}/plan:
+    get:
+      tags: [Plan]
+      summary: Get current repair plan
+      operationId: getRepairPlan
+      parameters:
+        - $ref: '#/components/parameters/ManholeId'
+      responses:
+        '200':
+          description: Current repair plan
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/XRequestId'
+            ETag:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RepairPlan'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/PlanNotFound'
+    post:
+      tags: [Plan]
+      summary: Generate or reuse current repair plan
+      operationId: generateRepairPlan
+      parameters:
+        - $ref: '#/components/parameters/ManholeId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PlanRequest'
+      responses:
+        '200':
+          description: Existing plan reused
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/XRequestId'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RepairPlan'
+        '201':
+          description: Plan created
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/XRequestId'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RepairPlan'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/ManholeNotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+
+  /manholes/{manholeId}/simulation:
+    get:
+      tags: [Simulation]
+      summary: Get current construction simulation
+      operationId: getSimulation
+      parameters:
+        - $ref: '#/components/parameters/ManholeId'
+        - name: planVersion
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Construction simulation
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/XRequestId'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Simulation'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/PlanNotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  /manholes/{manholeId}/acceptance:
+    get:
+      tags: [Acceptance]
+      summary: Get current acceptance report
+      operationId: getAcceptanceReport
+      parameters:
+        - $ref: '#/components/parameters/ManholeId'
+      responses:
+        '200':
+          description: Acceptance report
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/XRequestId'
+            ETag:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AcceptanceReport'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/AcceptanceNotFound'
+    post:
+      tags: [Acceptance]
+      summary: Generate or reuse current acceptance report
+      operationId: generateAcceptanceReport
+      parameters:
+        - $ref: '#/components/parameters/ManholeId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AcceptanceRequest'
+      responses:
+        '200':
+          description: Existing report reused
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/XRequestId'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AcceptanceReport'
+        '201':
+          description: Report created
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/XRequestId'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AcceptanceReport'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/ManholeNotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+
+  /demo-script:
+    get:
+      tags: [Demo Script]
+      summary: Get demo script
+      operationId: getDemoScript
+      parameters:
+        - name: scriptId
+          in: query
+          schema:
+            type: string
+            default: default
+        - name: audience
+          in: query
+          schema:
+            type: string
+            enum: [executive, technical]
+            default: executive
+      responses:
+        '200':
+          description: Demo script
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/XRequestId'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DemoScript'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/ScriptNotFound'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  headers:
+    XRequestId:
+      description: Request correlation id
+      schema:
+        type: string
+
+  parameters:
+    ProjectId:
+      name: projectId
+      in: query
+      schema:
+        type: string
+    ManholeId:
+      name: manholeId
+      in: path
+      required: true
+      schema:
+        type: string
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: false
+      description: Recommended for all POST generation requests
+      schema:
+        type: string
+        maxLength: 128
+
+  responses:
+    BadRequest:
+      description: Invalid request parameters
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            filterInvalid:
+              value:
+                error:
+                  code: FILTER_INVALID
+                  message: bbox must contain four comma-separated numbers.
+                  details:
+                    - field: bbox
+                      issue: invalid_bbox
+                  correlationId: req_01JY5Y4MN0D6N4MVPJ4T8YV8AA
+    Unauthorized:
+      description: Missing or invalid authentication
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            authRequired:
+              value:
+                error:
+                  code: AUTH_REQUIRED
+                  message: Authentication is required.
+                  details: []
+                  correlationId: req_01AUTH
+    Forbidden:
+      description: Not allowed to access this resource
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            forbidden:
+              value:
+                error:
+                  code: FORBIDDEN
+                  message: You do not have access to this project.
+                  details: []
+                  correlationId: req_01FORBID
+    Conflict:
+      description: Version, dependency, or idempotency conflict
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            staleVersion:
+              value:
+                error:
+                  code: CONFLICTING_SOURCE_VERSION
+                  message: Inspection version v2 is not the latest available version for manhole mh-0007.
+                  details:
+                    - field: inspectionVersion
+                      issue: stale_version
+                      currentVersion: v3
+                  correlationId: req_01JY5Y7QW8M0T4M9Q2Q7J0T2E9
+            precondition:
+              value:
+                error:
+                  code: PRECONDITION_REQUIRED
+                  message: Repair plan cannot be generated before a diagnosis exists.
+                  details:
+                    - field: diagnosisVersion
+                      issue: missing_dependency
+                      dependency: diagnosis
+                  correlationId: req_01JY5Y8Q5H2D3QDTK9HX6W4V6G
+    UnprocessableEntity:
+      description: Business input cannot be processed
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            unprocessable:
+              value:
+                error:
+                  code: UNPROCESSABLE_INPUT
+                  message: The requested generation mode is not supported for this manhole state.
+                  details:
+                    - field: generationMode
+                      issue: unsupported_value
+                  correlationId: req_01UNPROC
+    ManholeNotFound:
+      description: Manhole not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            manholeMissing:
+              value:
+                error:
+                  code: MANHOLE_NOT_FOUND
+                  message: Manhole mh-9999 was not found.
+                  details: []
+                  correlationId: req_01JY5Y5X9Q0T7Q0S5W4DR9H79J
+    DiagnosisNotFound:
+      description: Diagnosis not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            diagnosisMissing:
+              value:
+                error:
+                  code: DIAGNOSIS_NOT_FOUND
+                  message: Diagnosis for manhole mh-0007 was not found.
+                  details: []
+                  correlationId: req_01DIAG404
+    PlanNotFound:
+      description: Repair plan not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            planMissing:
+              value:
+                error:
+                  code: PLAN_NOT_FOUND
+                  message: Repair plan for manhole mh-0007 was not found.
+                  details: []
+                  correlationId: req_01PLAN404
+    AcceptanceNotFound:
+      description: Acceptance report not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            acceptanceMissing:
+              value:
+                error:
+                  code: ACCEPTANCE_NOT_FOUND
+                  message: Acceptance report for manhole mh-0007 was not found.
+                  details: []
+                  correlationId: req_01ACC404
+    ScriptNotFound:
+      description: Demo script not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            scriptMissing:
+              value:
+                error:
+                  code: SCRIPT_NOT_FOUND
+                  message: Demo script advanced-english was not found.
+                  details: []
+                  correlationId: req_01SCRIPT404
+
+  schemas:
+    RiskLevel:
+      type: string
+      enum: [low, medium, high, critical]
+
+    DiseaseLevel:
+      type: string
+      enum: [A, B, C, D]
+
+    TrafficLevel:
+      type: string
+      enum: [low, medium, heavy, bus_lane]
+
+    PipelineType:
+      type: string
+      enum: [storm_water, sewer, power, telecom, mixed]
+
+    ManholeStatus:
+      type: string
+      enum: [normal, monitored, pending_repair, under_repair, accepted]
+
+    GenerationMode:
+      type: string
+      enum: [reuse_if_unchanged, force_recompute]
+
+    CoordinateSpace:
+      type: string
+      enum: [WGS84, local_manhole_plane]
+
+    GeoPoint:
+      type: object
+      additionalProperties: false
+      required: [lon, lat]
+      properties:
+        lon:
+          type: number
+          format: double
+        lat:
+          type: number
+          format: double
+
+    Pagination:
+      type: object
+      additionalProperties: false
+      required: [pageSize]
+      properties:
+        pageSize:
+          type: integer
+        nextPageToken:
+          type: string
+
+    DashboardTotals:
+      type: object
+      additionalProperties: false
+      required:
+        [manholes, highRiskManholes, diagnosedManholes, plannedManholes, acceptedManholes]
+      properties:
+        manholes:
+          type: integer
+        highRiskManholes:
+          type: integer
+        diagnosedManholes:
+          type: integer
+        plannedManholes:
+          type: integer
+        acceptedManholes:
+          type: integer
+
+    RiskBucket:
+      type: object
+      additionalProperties: false
+      required: [riskLevel, count]
+      properties:
+        riskLevel:
+          $ref: '#/components/schemas/RiskLevel'
+        count:
+          type: integer
+
+    TopRiskItem:
+      type: object
+      additionalProperties: false
+      required: [manholeId, code, roadName, riskScore, riskLevel]
+      properties:
+        manholeId:
+          type: string
+        code:
+          type: string
+        roadName:
+          type: string
+        riskScore:
+          type: integer
+          minimum: 0
+          maximum: 100
+        riskLevel:
+          $ref: '#/components/schemas/RiskLevel'
+
+    DashboardSummary:
+      type: object
+      additionalProperties: false
+      required: [projectId, generatedAt, totals, riskDistribution, topRisks]
+      properties:
+        projectId:
+          type: string
+        generatedAt:
+          type: string
+          format: date-time
+        totals:
+          $ref: '#/components/schemas/DashboardTotals'
+        riskDistribution:
+          type: array
+          items:
+            $ref: '#/components/schemas/RiskBucket'
+        topRisks:
+          type: array
+          items:
+            $ref: '#/components/schemas/TopRiskItem'
+
+    MapManholeFeature:
+      type: object
+      additionalProperties: false
+      required: [id, code, riskScore, riskLevel, roadName, pipelineType, location]
+      properties:
+        id:
+          type: string
+        code:
+          type: string
+        riskScore:
+          type: integer
+          minimum: 0
+          maximum: 100
+        riskLevel:
+          $ref: '#/components/schemas/RiskLevel'
+        diseaseLevel:
+          $ref: '#/components/schemas/DiseaseLevel'
+        roadName:
+          type: string
+        pipelineType:
+          $ref: '#/components/schemas/PipelineType'
+        location:
+          $ref: '#/components/schemas/GeoPoint'
+
+    MapMeta:
+      type: object
+      additionalProperties: false
+      required: [count, limit]
+      properties:
+        count:
+          type: integer
+        limit:
+          type: integer
+
+    MapManholeFeatureCollection:
+      type: object
+      additionalProperties: false
+      required: [coordinateReferenceSystem, features, meta]
+      properties:
+        coordinateReferenceSystem:
+          type: string
+          enum: [WGS84]
+        features:
+          type: array
+          items:
+            $ref: '#/components/schemas/MapManholeFeature'
+        meta:
+          $ref: '#/components/schemas/MapMeta'
+
+    LatestInspectionSummary:
+      type: object
+      additionalProperties: false
+      required:
+        - inspectionId
+        - inspectionVersion
+        - inspectedAt
+        - heightDiffMm
+        - flatnessMm
+        - noisePeakDb
+        - crackLengthM
+        - anomalyAreaM2
+        - voidDepthMinCm
+        - voidDepthMaxCm
+        - surfacePhotoUrls
+      properties:
+        inspectionId:
+          type: string
+        inspectionVersion:
+          type: string
+        inspectedAt:
+          type: string
+          format: date-time
+        heightDiffMm:
+          type: number
+        flatnessMm:
+          type: number
+        noisePeakDb:
+          type: number
+        crackLengthM:
+          type: number
+        anomalyAreaM2:
+          type: number
+        voidDepthMinCm:
+          type: number
+        voidDepthMaxCm:
+          type: number
+        surfacePhotoUrls:
+          type: array
+          items:
+            type: string
+            format: uri
+
+    ResourceLinks:
+      type: object
+      additionalProperties: false
+      required: [diagnosis, plan, simulation, acceptance]
+      properties:
+        diagnosis:
+          type: string
+        plan:
+          type: string
+        simulation:
+          type: string
+        acceptance:
+          type: string
+
+    EmbeddedDiagnosisSummary:
+      type: object
+      additionalProperties: false
+      required: [diagnosisVersion, riskScore, riskLevel, diseaseLevel]
+      properties:
+        diagnosisVersion:
+          type: string
+        riskScore:
+          type: integer
+        riskLevel:
+          $ref: '#/components/schemas/RiskLevel'
+        diseaseLevel:
+          $ref: '#/components/schemas/DiseaseLevel'
+
+    EmbeddedPlanSummary:
+      type: object
+      additionalProperties: false
+      required: [planVersion, recommendedMethod, openTrafficHours]
+      properties:
+        planVersion:
+          type: string
+        recommendedMethod:
+          type: string
+        openTrafficHours:
+          type: integer
+
+    EmbeddedAcceptanceSummary:
+      type: object
+      additionalProperties: false
+      required: [acceptanceVersion, conclusion, openTrafficAt]
+      properties:
+        acceptanceVersion:
+          type: string
+        conclusion:
+          type: string
+        openTrafficAt:
+          type: string
+          format: date-time
+
+    ManholeSummary:
+      type: object
+      additionalProperties: false
+      required:
+        - id
+        - code
+        - roadName
+        - manholeType
+        - pipelineType
+        - trafficLevel
+        - status
+        - riskScore
+        - riskLevel
+        - location
+      properties:
+        id:
+          type: string
+        code:
+          type: string
+        roadName:
+          type: string
+        manholeType:
+          type: string
+        pipelineType:
+          $ref: '#/components/schemas/PipelineType'
+        trafficLevel:
+          $ref: '#/components/schemas/TrafficLevel'
+        status:
+          $ref: '#/components/schemas/ManholeStatus'
+        riskScore:
+          type: integer
+          minimum: 0
+          maximum: 100
+        riskLevel:
+          $ref: '#/components/schemas/RiskLevel'
+        location:
+          $ref: '#/components/schemas/GeoPoint'
+
+    ManholeListResponse:
+      type: object
+      additionalProperties: false
+      required: [items, page]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/ManholeSummary'
+        page:
+          $ref: '#/components/schemas/Pagination'
+
+    ManholeDetail:
+      allOf:
+        - $ref: '#/components/schemas/ManholeSummary'
+        - type: object
+          additionalProperties: false
+          required:
+            - projectId
+            - roadId
+            - lastRepairAt
+            - repairCount
+            - latestInspection
+            - links
+          properties:
+            projectId:
+              type: string
+            roadId:
+              type: string
+            lastRepairAt:
+              type: string
+              format: date-time
+            repairCount:
+              type: integer
+            latestInspection:
+              $ref: '#/components/schemas/LatestInspectionSummary'
+            diagnosis:
+              $ref: '#/components/schemas/EmbeddedDiagnosisSummary'
+            plan:
+              $ref: '#/components/schemas/EmbeddedPlanSummary'
+            acceptance:
+              $ref: '#/components/schemas/EmbeddedAcceptanceSummary'
+            links:
+              $ref: '#/components/schemas/ResourceLinks'
+
+    DiagnosisRequest:
+      type: object
+      additionalProperties: false
+      required: [inspectionVersion, generationMode]
+      properties:
+        inspectionVersion:
+          type: string
+        generationMode:
+          $ref: '#/components/schemas/GenerationMode'
+
+    LocalPolygon:
+      type: array
+      minItems: 3
+      items:
+        type: array
+        minItems: 2
+        maxItems: 2
+        items:
+          type: number
+
+    DefectRegion:
+      type: object
+      additionalProperties: false
+      required:
+        [defectType, areaLabel, depthMinCm, depthMaxCm, confidence, coordinateSpace, polygon]
+      properties:
+        defectType:
+          type: string
+          enum: [void, loosened_base, debonding, water_damage, seat_looseness, deep_cavity]
+        areaLabel:
+          type: string
+        depthMinCm:
+          type: number
+        depthMaxCm:
+          type: number
+        confidence:
+          type: number
+          minimum: 0
+          maximum: 1
+        coordinateSpace:
+          type: string
+          enum: [local_manhole_plane]
+        polygon:
+          $ref: '#/components/schemas/LocalPolygon'
+
+    HeatmapCell:
+      type: object
+      additionalProperties: false
+      required: [x, y, radiusM, intensity]
+      properties:
+        x:
+          type: number
+        y:
+          type: number
+        radiusM:
+          type: number
+        intensity:
+          type: number
+          minimum: 0
+          maximum: 1
+
+    DiagnosisRecommendation:
+      type: object
+      additionalProperties: false
+      required: [recommendedMethod, openTrafficHours, estimatedGroutLiters, groutingHoleCount]
+      properties:
+        recommendedMethod:
+          type: string
+        openTrafficHours:
+          type: integer
+        estimatedGroutLiters:
+          type: number
+        groutingHoleCount:
+          type: integer
+
+    Diagnosis:
+      type: object
+      additionalProperties: false
+      required:
+        - manholeId
+        - diagnosisVersion
+        - inspectionVersion
+        - generationStatus
+        - generatedAt
+        - riskScore
+        - riskLevel
+        - diseaseLevel
+        - confidence
+        - summary
+        - defects
+        - heatmapCells
+        - recommendation
+      properties:
+        manholeId:
+          type: string
+        diagnosisVersion:
+          type: string
+        inspectionVersion:
+          type: string
+        generationStatus:
+          type: string
+          enum: [created, reused, recomputed]
+        generatedAt:
+          type: string
+          format: date-time
+        riskScore:
+          type: integer
+          minimum: 0
+          maximum: 100
+        riskLevel:
+          $ref: '#/components/schemas/RiskLevel'
+        diseaseLevel:
+          $ref: '#/components/schemas/DiseaseLevel'
+        confidence:
+          type: number
+          minimum: 0
+          maximum: 1
+        summary:
+          type: string
+        defects:
+          type: array
+          items:
+            $ref: '#/components/schemas/DefectRegion'
+        heatmapCells:
+          type: array
+          items:
+            $ref: '#/components/schemas/HeatmapCell'
+        recommendation:
+          $ref: '#/components/schemas/DiagnosisRecommendation'
+
+    PlanRequest:
+      type: object
+      additionalProperties: false
+      required: [diagnosisVersion, generationMode]
+      properties:
+        diagnosisVersion:
+          type: string
+        generationMode:
+          $ref: '#/components/schemas/GenerationMode'
+
+    PlanMaterial:
+      type: object
+      additionalProperties: false
+      required: [materialCode, materialName, purpose]
+      properties:
+        materialCode:
+          type: string
+        materialName:
+          type: string
+        purpose:
+          type: string
+
+    GroutingHole:
+      type: object
+      additionalProperties: false
+      required: [holeId, x, y, depthCm, estimatedGroutLiters]
+      properties:
+        holeId:
+          type: string
+        x:
+          type: number
+        y:
+          type: number
+        depthCm:
+          type: number
+        estimatedGroutLiters:
+          type: number
+
+    RepairPlan:
+      type: object
+      additionalProperties: false
+      required:
+        - manholeId
+        - planVersion
+        - diagnosisVersion
+        - generationStatus
+        - diseaseLevel
+        - recommendedMethod
+        - recommendedMaterials
+        - groutingHoles
+        - estimatedDurationMinutes
+        - openTrafficHours
+        - estimatedGroutLiters
+        - expectedGarbageReductionPercent
+      properties:
+        manholeId:
+          type: string
+        planVersion:
+          type: string
+        diagnosisVersion:
+          type: string
+        generationStatus:
+          type: string
+          enum: [created, reused, recomputed]
+        diseaseLevel:
+          $ref: '#/components/schemas/DiseaseLevel'
+        recommendedMethod:
+          type: string
+        recommendedMaterials:
+          type: array
+          items:
+            $ref: '#/components/schemas/PlanMaterial'
+        groutingHoles:
+          type: array
+          items:
+            $ref: '#/components/schemas/GroutingHole'
+        estimatedDurationMinutes:
+          type: integer
+        openTrafficHours:
+          type: integer
+        estimatedGroutLiters:
+          type: number
+        expectedGarbageReductionPercent:
+          type: number
+
+    SimulationStep:
+      type: object
+      additionalProperties: false
+      required: [stepCode, title, sequence, estimatedDurationMinutes, visualType, metrics]
+      properties:
+        stepCode:
+          type: string
+          enum: [layout_holes, pressure_grouting, seat_locking, fast_set_restore]
+        title:
+          type: string
+        sequence:
+          type: integer
+        estimatedDurationMinutes:
+          type: integer
+        visualType:
+          type: string
+        metrics:
+          type: object
+          additionalProperties:
+            oneOf:
+              - type: number
+              - type: integer
+              - type: string
+
+    SimulationTargetOutcomes:
+      type: object
+      additionalProperties: false
+      required: [flatnessAfterMm, heightDiffAfterMm, noiseStatus, openTrafficHours]
+      properties:
+        flatnessAfterMm:
+          type: number
+        heightDiffAfterMm:
+          type: number
+        noiseStatus:
+          type: string
+        openTrafficHours:
+          type: integer
+
+    Simulation:
+      type: object
+      additionalProperties: false
+      required: [manholeId, planVersion, coordinateSpace, steps, targetOutcomes]
+      properties:
+        manholeId:
+          type: string
+        planVersion:
+          type: string
+        coordinateSpace:
+          type: string
+          enum: [local_manhole_plane]
+        steps:
+          type: array
+          items:
+            $ref: '#/components/schemas/SimulationStep'
+        targetOutcomes:
+          $ref: '#/components/schemas/SimulationTargetOutcomes'
+
+    AcceptanceRequest:
+      type: object
+      additionalProperties: false
+      required: [planVersion, includeReportSections]
+      properties:
+        planVersion:
+          type: string
+        includeReportSections:
+          type: array
+          items:
+            type: string
+            enum:
+              - before_after_metrics
+              - diagnosis_summary
+              - grouting_summary
+              - reinspection_recommendation
+
+    BeforeAfterMetric:
+      type: object
+      additionalProperties: false
+      required: [metricCode, before, after, target, unit]
+      properties:
+        metricCode:
+          type: string
+        before:
+          type: number
+        after:
+          type: number
+        target:
+          type: number
+        unit:
+          type: string
+
+    RecurrenceRisk:
+      type: object
+      additionalProperties: false
+      required: [risk3Months, risk6Months, risk12Months]
+      properties:
+        risk3Months:
+          type: number
+          minimum: 0
+          maximum: 1
+        risk6Months:
+          type: number
+          minimum: 0
+          maximum: 1
+        risk12Months:
+          type: number
+          minimum: 0
+          maximum: 1
+
+    AcceptanceReport:
+      type: object
+      additionalProperties: false
+      required:
+        - manholeId
+        - acceptanceVersion
+        - planVersion
+        - reportNo
+        - generatedAt
+        - conclusion
+        - beforeAfterMetrics
+        - noiseConclusion
+        - openTrafficAt
+        - recurrenceRisk
+        - recommendedNextInspectionAt
+      properties:
+        manholeId:
+          type: string
+        acceptanceVersion:
+          type: string
+        planVersion:
+          type: string
+        reportNo:
+          type: string
+        generatedAt:
+          type: string
+          format: date-time
+        conclusion:
+          type: string
+        beforeAfterMetrics:
+          type: array
+          items:
+            $ref: '#/components/schemas/BeforeAfterMetric'
+        noiseConclusion:
+          type: string
+        openTrafficAt:
+          type: string
+          format: date-time
+        recurrenceRisk:
+          $ref: '#/components/schemas/RecurrenceRisk'
+        recommendedNextInspectionAt:
+          type: string
+          format: date-time
+
+    DemoSceneFocus:
+      type: object
+      additionalProperties: false
+      properties:
+        manholeId:
+          type: string
+
+    DemoScene:
+      type: object
+      additionalProperties: false
+      required: [sceneCode, sequence, route, title, narration]
+      properties:
+        sceneCode:
+          type: string
+        sequence:
+          type: integer
+        route:
+          type: string
+        title:
+          type: string
+        narration:
+          type: string
+        focus:
+          $ref: '#/components/schemas/DemoSceneFocus'
+
+    DemoScript:
+      type: object
+      additionalProperties: false
+      required: [scriptId, audience, title, manholeId, scenes]
+      properties:
+        scriptId:
+          type: string
+        audience:
+          type: string
+          enum: [executive, technical]
+        title:
+          type: string
+        manholeId:
+          type: string
+        scenes:
+          type: array
+          items:
+            $ref: '#/components/schemas/DemoScene'
+
+    ErrorDetail:
+      type: object
+      additionalProperties: true
+      required: [field, issue]
+      properties:
+        field:
+          type: string
+        issue:
+          type: string
+
+    ErrorBody:
+      type: object
+      additionalProperties: false
+      required: [code, message, details, correlationId]
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        details:
+          type: array
+          items:
+            $ref: '#/components/schemas/ErrorDetail'
+        correlationId:
+          type: string
+
+    ErrorResponse:
+      type: object
+      additionalProperties: false
+      required: [error]
+      properties:
+        error:
+          $ref: '#/components/schemas/ErrorBody'

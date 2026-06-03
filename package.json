@@ -1,0 +1,14 @@
+{
+  "name": "fortunes",
+  "private": true,
+  "workspaces": [
+    "apps/web",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspace @fortunes/web",
+    "start": "npm run start --workspace @fortunes/web",
+    "build": "npm run build --workspace @fortunes/web",
+    "lint": "npm run lint --workspace @fortunes/web"
+  }
+}
