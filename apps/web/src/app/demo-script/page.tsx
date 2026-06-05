@@ -123,6 +123,48 @@ export default async function DemoScriptPage() {
         label="从监测总览重新开始"
       />
 
+      <section className="two-column">
+        <Panel>
+          <SectionTitle title="开场 30 秒定位" eyebrow="Opening Narrative" />
+          <div className="timeline-list">
+            <div className="timeline-item">
+              <strong>一句话</strong>
+              <p>谛听是管井及周边道路的智能监测管理平台，不只是单井维修页面。</p>
+            </div>
+            <div className="timeline-item">
+              <strong>四层能力</strong>
+              <p>数据采集层、AI诊断基座、监测管理平台、工单处置移动端共同形成闭环。</p>
+            </div>
+            <div className="timeline-item">
+              <strong>固定案例</strong>
+              <p>用 JW-A-0007 展示从二级告警发现到验收归档的完整链路。</p>
+            </div>
+          </div>
+        </Panel>
+
+        <Panel>
+          <SectionTitle title="客户侧价值表达" eyebrow="Value Proof" />
+          <div className="value-proof-grid">
+            <div>
+              <strong>看得见</strong>
+              <p>地图和一井一档把隐患证据集中呈现。</p>
+            </div>
+            <div>
+              <strong>判得准</strong>
+              <p>AI研判输出评分、等级、异常范围和置信度。</p>
+            </div>
+            <div>
+              <strong>派得下去</strong>
+              <p>处置方案直接转成工法、孔位、材料和时间目标。</p>
+            </div>
+            <div>
+              <strong>收得回来</strong>
+              <p>施工过程、验收指标和复检建议沉淀为一井一档。</p>
+            </div>
+          </div>
+        </Panel>
+      </section>
+
       <div className="stack-lg">
         {platformDemoSteps.map((step, index) => (
           <Panel key={step.id} className="demo-step">

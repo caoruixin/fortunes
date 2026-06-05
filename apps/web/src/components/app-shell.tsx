@@ -41,8 +41,15 @@ export function AppShell({
     <div className="app-shell">
       <aside className="sidebar">
         <div className="brand-block">
-          <span className="brand-kicker">Diting Platform</span>
-          <h1>谛听</h1>
+          <div className="brand-mark-row">
+            <span className="diting-logo" aria-hidden="true">
+              <span />
+            </span>
+            <div>
+              <span className="brand-kicker">Diting Platform</span>
+              <h1>谛听</h1>
+            </div>
+          </div>
           <p>管井及周边道路智能监测管理平台</p>
         </div>
         <nav className="main-nav" aria-label="主导航">

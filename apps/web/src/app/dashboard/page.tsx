@@ -196,6 +196,91 @@ export default async function DashboardPage() {
         </Panel>
       </section>
 
+      <Panel>
+        <SectionTitle
+          title="谛听平台四层架构"
+          eyebrow="Platform Blueprint"
+          action={<StagePill tone="success">对应监测管理平台方案</StagePill>}
+        />
+        <div className="architecture-strip" aria-label="谛听平台四层架构">
+          {[
+            {
+              title: "数据采集层",
+              meta: "井盖传感器 / AI摄像 / 雷达巡检",
+              detail: "接入沉降、声振、视觉病害和地下异常数据。"
+            },
+            {
+              title: "AI诊断基座",
+              meta: "多源融合 / 风险评分 / 病害识别",
+              detail: "把监测证据转成等级、范围、置信度和处置建议。"
+            },
+            {
+              title: "监测管理平台",
+              meta: "GIS态势 / 一井一档 / 统计分析",
+              detail: "面向管理人员呈现告警、工单、档案和闭环进度。"
+            },
+            {
+              title: "工单处置移动端",
+              meta: "接单 / 采集 / 反馈 / 归档",
+              detail: "支撑班组现场处置、拍照回传和验收确认。"
+            }
+          ].map((layer, index) => (
+            <div key={layer.title} className="architecture-node">
+              <span className="architecture-index">{index + 1}</span>
+              <strong>{layer.title}</strong>
+              <p className="architecture-meta">{layer.meta}</p>
+              <p>{layer.detail}</p>
+            </div>
+          ))}
+        </div>
+      </Panel>
+
+      <section className="two-column">
+        <Panel>
+          <SectionTitle title="工单处置移动端" eyebrow="Field App Preview" />
+          <div className="mobile-preview">
+            <div className="mobile-top">
+              <span>现场工单</span>
+              <strong>JW-A-0007</strong>
+            </div>
+            <div className="mobile-alert">
+              <strong>二级告警 / C 级病害</strong>
+              <p>环向脱空与井座松动，建议微孔注浆 + 井座锁固。</p>
+            </div>
+            <div className="mobile-task-list">
+              {["到场签到", "布孔复核", "分级注浆", "验收拍照"].map((task, index) => (
+                <div key={task} className="mobile-task">
+                  <span>{index + 1}</span>
+                  <strong>{task}</strong>
+                </div>
+              ))}
+            </div>
+            <div className="mobile-footer">
+              <span>预计开放交通</span>
+              <strong>2 h</strong>
+            </div>
+          </div>
+        </Panel>
+
+        <Panel>
+          <SectionTitle title="管理闭环差距已补齐" eyebrow="Demo Polish" />
+          <div className="timeline-list">
+            <div className="timeline-item">
+              <strong>从“诊修工具”升级为“监测管理平台”</strong>
+              <p>首页直接解释多源感知、AI基座、GIS平台和移动工单四层关系。</p>
+            </div>
+            <div className="timeline-item">
+              <strong>客户先理解平台，再看单井案例</strong>
+              <p>固定演示路径仍使用 JW-A-0007，但叙事从片区态势进入单井闭环。</p>
+            </div>
+            <div className="timeline-item">
+              <strong>移动端先做演示表达</strong>
+              <p>当前不新增独立 App，先在平台侧展示接单、采集、反馈、归档的现场闭环。</p>
+            </div>
+          </div>
+        </Panel>
+      </section>
+
       <section className="three-column">
         <Panel>
           <SectionTitle title="区域风险分布" eyebrow="Risk Distribution" />
