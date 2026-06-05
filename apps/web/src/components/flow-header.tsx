@@ -2,11 +2,11 @@ import { DiseaseLevel, RiskLevel } from "@/lib/types";
 import { GradePill, RiskPill, StagePill } from "@/components/ui";
 
 const flowSteps = [
-  { key: "detail", label: "单井详情" },
-  { key: "diagnosis", label: "AI 诊断" },
-  { key: "plan", label: "维修方案" },
-  { key: "simulation", label: "施工模拟" },
-  { key: "acceptance", label: "验收报告" }
+  { key: "detail", label: "一井一档" },
+  { key: "diagnosis", label: "AI研判" },
+  { key: "plan", label: "处置方案" },
+  { key: "simulation", label: "施工监管" },
+  { key: "acceptance", label: "验收归档" }
 ] as const;
 
 export function FlowHeader({

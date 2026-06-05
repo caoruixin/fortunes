@@ -691,10 +691,10 @@ const trafficLabels: Record<TrafficLevel, string> = {
 };
 
 const workflowStatusLabels: Record<ManholeDetail["status"], string> = {
-  undiagnosed: "待诊断",
-  diagnosed: "已诊断",
-  planned: "已出方案",
-  accepted: "已完成验收"
+  undiagnosed: "待研判",
+  diagnosed: "已研判",
+  planned: "已派单",
+  accepted: "已归档"
 };
 
 function toConfidence(value: number) {
@@ -1100,7 +1100,7 @@ export function buildAcceptance(
     beforeMetrics: before,
     afterMetrics: after,
     acceptanceStatus: detail.diseaseLevel === "D" ? "conditionalReview" : "passed",
-    reopenTrafficAt: detail.diseaseLevel === "D" ? "待复核" : "修复后 2 小时",
+    reopenTrafficAt: detail.diseaseLevel === "D" ? "待复核" : "处置完成后 2 小时开放交通",
     recurrenceRisk: detail.diseaseLevel === "D" ? "高" : detail.diseaseLevel === "C" ? "中低" : "低",
     followUpRecommendation:
       detail.diseaseLevel === "D"
@@ -1172,54 +1172,54 @@ export function getMockDemoScript(): DemoScript {
   return {
     scriptId: "demo-script-v1",
     recommendedManholeId: DEMO_MANHOLE_ID,
-    headline: "5-8 分钟讲清井周病害如何被看见、被判断、被验证。",
+    headline: "5-8 分钟讲清谛听如何完成全域监测、AI研判、工单处置和验收归档。",
     steps: [
       {
         id: "step-dashboard",
-        title: "总览入口",
-        summary: "先从全市风险分布切入，说明不是单点维修工具。",
+        title: "监测总览",
+        summary: "先从全域管井监测、告警和工单闭环切入，说明这是一套管理平台。",
         route: "/dashboard",
-        talkingPoints: ["高风险井数量", "待处置任务", "2 小时开放交通能力"]
+        talkingPoints: ["纳管管井", "今日告警", "待处置工单", "闭环达标率"]
       },
       {
         id: "step-map",
-        title: "地图定位高风险井",
-        summary: "切到科技大道示范井，展示风险颜色和资产底座。",
+        title: "GIS 定位二级橙色告警井",
+        summary: "切到 JW-A-0007，展示告警等级、管线类型和资产底座。",
         route: "/map",
-        talkingPoints: ["风险等级色", "管线类型", "最近投诉与维修历史"]
+        talkingPoints: ["三级告警色", "管线类型", "监测来源", "处置状态"]
       },
       {
         id: "step-detail",
-        title: "单井详情说明为什么修",
-        summary: "展示照片占位、检测指标和雷达预览。",
+        title: "一井一档说明为什么处置",
+        summary: "展示监测指标、巡检影像、雷达预览和历史处置记录。",
         route: `/manholes/${DEMO_MANHOLE_ID}`,
-        talkingPoints: ["井盖高差", "平整度", "声振异常", "雷达异常面积"]
+        talkingPoints: ["井盖高差", "平整度", "声振异常", "雷达异常面积", "当前工单状态"]
       },
       {
         id: "step-diagnosis",
-        title: "AI 诊断看见地下病害",
-        summary: "自动跑完诊断动画，展示热力区和风险解释。",
+        title: "AI 风险研判看见地下病害",
+        summary: "自动跑完研判动画，展示热力区、异常深度和评分依据。",
         route: `/manholes/${DEMO_MANHOLE_ID}/diagnosis?autorun=1`,
-        talkingPoints: ["C 级病害", "基层松散 + 局部脱空", "评分因子不是黑箱"]
+        talkingPoints: ["C 级病害", "基层松散 + 局部脱空", "综合评分依据", "处置建议"]
       },
       {
         id: "step-plan",
-        title: "方案把诊断变施工",
-        summary: "强调微孔注浆、井座锁固和快硬材料恢复的闭环。",
+        title: "处置方案自动转工单",
+        summary: "强调系统把研判结果转成可执行工法、材料、孔位和开放交通目标。",
         route: `/manholes/${DEMO_MANHOLE_ID}/plan`,
         talkingPoints: ["孔位数量", "压力范围", "注浆量", "开放交通时间"]
       },
       {
         id: "step-simulation",
-        title: "施工模拟说明微创过程",
-        summary: "按四步走完工艺，突出非大开挖。 ",
+        title: "施工监管说明微创过程",
+        summary: "按四步走完处置过程，突出平台可监管、可回放、非大开挖。 ",
         route: `/manholes/${DEMO_MANHOLE_ID}/simulation`,
-        talkingPoints: ["精准布孔", "低压分级注浆", "井座锁固调平", "快硬恢复"]
+        talkingPoints: ["精准布孔", "低压分级注浆", "井座锁固调平", "快硬恢复", "过程遥测"]
       },
       {
         id: "step-acceptance",
-        title: "验收报告形成一井一档",
-        summary: "展示修复前后指标对比和复检建议。",
+        title: "验收归档形成一井一档",
+        summary: "展示处置前后指标对比、材料批次、归档入口和复检建议。",
         route: `/manholes/${DEMO_MANHOLE_ID}/acceptance`,
         talkingPoints: ["平整度对比", "声振对比", "材料批次", "3/6/12 月复检"]
       }

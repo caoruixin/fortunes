@@ -10,11 +10,11 @@ export default async function MapPage() {
   if (features.length === 0) {
     return (
       <EmptyState
-        title="地图暂无检查井"
-        description="请先加载 seed 数据，或确认后端服务已启动。"
+        title="GIS 暂无管井数据"
+        description="当前区域暂未同步管井点位，请稍后刷新或切换示范片区。"
         action={
           <Link href="/dashboard" className="button button-primary">
-            返回 Dashboard
+            返回监测总览
           </Link>
         }
       />
@@ -26,17 +26,17 @@ export default async function MapPage() {
       <header className="flow-header">
         <div className="flow-header-main">
           <div>
-            <p className="eyebrow">Map</p>
-            <h1>城市道路风险地图</h1>
-            <p className="flow-subtitle">从风险颜色和历史投诉切入，选择一座高风险检查井进入诊修闭环。</p>
+            <p className="eyebrow">GIS Situation</p>
+            <h1>城市管井 GIS 告警态势</h1>
+            <p className="flow-subtitle">按告警等级、管线类型和工单状态查看管井隐患，选择二级橙色告警井进入处置闭环。</p>
           </div>
         </div>
       </header>
       <DemoGuide
         meta="固定演示路线"
-        description="建议直接选中 JW-A-0007。它是 C 级高风险样例，最适合讲清微孔注浆、井座锁固和快硬材料恢复闭环。"
+        description="建议直接选中 JW-A-0007。它是二级橙色告警样例，适合讲清多源监测、AI研判、派单处置和归档闭环。"
         href="/manholes/mh-0007"
-        label="下一步演示：进入 JW-A-0007"
+        label="下一步演示：进入重点告警井"
       />
       <MapWorkspace features={features} />
     </div>

@@ -4,16 +4,68 @@ import Link from "next/link";
 import { DemoGuide, EmptyState, Panel, SectionTitle, StagePill } from "@/components/ui";
 import { getDemoScript, getManholeDetail } from "@/lib/api";
 
+const platformDemoSteps = [
+  {
+    id: "dashboard",
+    title: "监测总览",
+    summary: "先看示范片区纳管管井、今日告警、待处置工单和闭环达标率。",
+    route: "/dashboard",
+    talkingPoints: ["谛听不是单点修复工具，而是监测、研判、处置、归档的一体化平台。", "多源感知接入智能井盖、AI视觉巡检和探地雷达。"]
+  },
+  {
+    id: "map",
+    title: "GIS 告警态势",
+    summary: "从全域地图选择二级橙色告警井 JW-A-0007，进入固定讲解路径。",
+    route: "/map?focus=mh-0007",
+    talkingPoints: ["地图按告警等级、管线类型和处置状态组织。", "二级橙色告警井适合展示地下隐患专项研判。"]
+  },
+  {
+    id: "archive",
+    title: "一井一档",
+    summary: "查看单井基础档案、监测指标、雷达异常和历史处置记录。",
+    route: "/manholes/mh-0007",
+    talkingPoints: ["一口井对应一套完整数字档案。", "井盖高差、声振峰值、雷达异常共同解释为什么要处置。"]
+  },
+  {
+    id: "assessment",
+    title: "AI 风险研判",
+    summary: "把多源证据转成风险评分、病害等级、异常分区和处置建议。",
+    route: "/manholes/mh-0007/diagnosis?autorun=1",
+    talkingPoints: ["研判结果不是黑箱，保留评分依据、深度范围和置信度。", "C 级病害进入微创处置闭环，D 级保留复核退出机制。"]
+  },
+  {
+    id: "plan",
+    title: "处置方案",
+    summary: "平台把研判结果转成可派发工单，明确工法、材料、孔位和开放交通目标。",
+    route: "/manholes/mh-0007/plan",
+    talkingPoints: ["推荐微孔注浆、井座锁固和快硬材料恢复。", "工单参数包括压力范围、注浆量、孔位数量和预计时长。"]
+  },
+  {
+    id: "supervision",
+    title: "施工监管",
+    summary: "回放处置过程，展示布孔、分级注浆、锁固调平和过程遥测。",
+    route: "/manholes/mh-0007/simulation",
+    talkingPoints: ["处置不是大开挖，而是可监测、可控制、可追溯。", "压力、流量和抬升数据用于质控。"]
+  },
+  {
+    id: "acceptance",
+    title: "验收归档",
+    summary: "形成一井一档验收档案，沉淀材料批次、处置记录、复检建议和归档入口。",
+    route: "/manholes/mh-0007/acceptance",
+    talkingPoints: ["用处置前后指标证明结果。", "验收状态下无明显跳动、空响和异常冲击声。"]
+  }
+];
+
 export default async function DemoScriptPage() {
   const script = await getDemoScript();
   const recommendedManhole = await getManholeDetail(script.recommendedManholeId);
 
-  if (script.steps.length === 0) {
+  if (platformDemoSteps.length === 0) {
     return (
       <EmptyState
-        title="暂无路演脚本"
-        description="请先启动后端服务或补充 demo script 数据。"
-        action={<Link href="/dashboard" className="button button-primary">返回 Dashboard</Link>}
+        title="暂无演示脚本"
+        description="当前暂未同步演示脚本，请稍后刷新或回到监测总览。"
+        action={<Link href="/dashboard" className="button button-primary">返回监测总览</Link>}
       />
     );
   }
@@ -24,15 +76,15 @@ export default async function DemoScriptPage() {
         <div className="flow-header-main">
           <div>
             <p className="eyebrow">Demo Script</p>
-            <h1>客户路演模式</h1>
-            <p className="flow-subtitle">{script.headline}</p>
+            <h1>标准演示路径</h1>
+            <p className="flow-subtitle">谛听监测管理平台讲解路径：先看全域风险，再看单井证据，再看研判与处置，最后看验收归档。</p>
           </div>
           <div className="flow-header-tags">
             <StagePill>
-              推荐井位 {recommendedManhole ? `${recommendedManhole.code} / ${recommendedManhole.id}` : script.recommendedManholeId}
+              推荐井位 {recommendedManhole ? recommendedManhole.code : "JW-A-0007"}
             </StagePill>
             <Link href={`/manholes/${script.recommendedManholeId}`} className="button button-primary">
-              从推荐井开始
+              从固定演示井开始
             </Link>
           </div>
         </div>
@@ -40,7 +92,7 @@ export default async function DemoScriptPage() {
 
       <div className="summary-grid">
         <div className="summary-card">
-          <span className="summary-label">固定主井</span>
+          <span className="summary-label">固定告警井</span>
           <strong className="summary-value">
             {recommendedManhole ? recommendedManhole.code : script.recommendedManholeId}
           </strong>
@@ -48,8 +100,8 @@ export default async function DemoScriptPage() {
         </div>
         <div className="summary-card">
           <span className="summary-label">演示步骤</span>
-          <strong className="summary-value">{script.steps.length} 步</strong>
-          <span className="summary-caption">避免现场自由跳转，降低讲解负担</span>
+          <strong className="summary-value">{platformDemoSteps.length} 节点</strong>
+          <span className="summary-caption">总览、地图、档案、研判、方案、监管、归档</span>
         </div>
         <div className="summary-card">
           <span className="summary-label">建议时长</span>
@@ -58,21 +110,21 @@ export default async function DemoScriptPage() {
         </div>
         <div className="summary-card">
           <span className="summary-label">主叙事</span>
-          <strong className="summary-value">看见 {"->"} 判断 {"->"} 验证</strong>
-          <span className="summary-caption">全程围绕病害、方案、结果三件事</span>
+          <strong className="summary-value">监测 {"->"} 研判 {"->"} 闭环</strong>
+          <span className="summary-caption">全程围绕告警、工单、归档三件事</span>
         </div>
       </div>
 
       <DemoGuide
         meta="讲解顺序"
         title="推荐 5-8 分钟讲完"
-        description="按风险总览、地图选井、单井证据、AI 诊断、维修方案、施工模拟、验收报告的顺序推进，避免现场自由跳页。"
+        description="按监测总览、GIS 态势、一井一档、AI 风险研判、处置方案、施工监管、验收归档的顺序推进，避免现场自由跳页。"
         href="/dashboard"
-        label="从 Dashboard 重新开始"
+        label="从监测总览重新开始"
       />
 
       <div className="stack-lg">
-        {script.steps.map((step, index) => (
+        {platformDemoSteps.map((step, index) => (
           <Panel key={step.id} className="demo-step">
             <div className="demo-step-head">
               <div>

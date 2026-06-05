@@ -58,70 +58,70 @@ def main() -> int:
             page.on("pageerror", lambda exc: page_errors.append(str(exc)))
 
             page.goto(f"{WEB_BASE_URL}/dashboard", wait_until="networkidle")
-            page.get_by_role("heading", name="道路检查井风险总览").wait_for()
+            page.get_by_role("heading", name="管井智能监测管理总览").wait_for()
             click_and_wait(
                 page,
-                page.get_by_role("link", name=re.compile(r"打开风险地图")).first,
+                page.get_by_role("link", name=re.compile(r"打开 GIS 态势")).first,
                 url_pattern="**/map?focus=mh-0007",
-                text="风险筛选",
+                text="告警筛选",
             )
 
             page.get_by_role("button", name=re.compile(r"JW-A-0007")).first.click()
             click_and_wait(
                 page,
-                page.get_by_role("link", name=re.compile(r"进入单井详情")).first,
+                page.get_by_role("link", name=re.compile(r"进入一井一档")).first,
                 url_pattern="**/manholes/mh-0007",
                 text="雷达扫描预览",
             )
 
             click_and_wait(
                 page,
-                page.get_by_role("link", name=re.compile(r"开始 AI 诊断")).first,
+                page.get_by_role("link", name=re.compile(r"启动 AI 风险研判")).first,
                 url_pattern="**/manholes/mh-0007/diagnosis?autorun=1",
-                text="诊断进度",
+                text="研判进度",
             )
 
             try:
-                page.get_by_role("button", name=re.compile(r"开始 AI 诊断|重新执行诊断")).click(timeout=1000)
+                page.get_by_role("button", name=re.compile(r"启动 AI 风险研判|重新生成研判结果")).click(timeout=1000)
             except PlaywrightTimeoutError:
                 pass
-            page.get_by_text("诊断结论").wait_for(timeout=8000)
+            page.get_by_text("研判结论").wait_for(timeout=8000)
             page.get_by_text("地下病害可视化").wait_for()
             click_and_wait(
                 page,
-                page.get_by_role("button", name=re.compile(r"生成维修方案")).first,
+                page.get_by_role("button", name=re.compile(r"生成处置方案")).first,
                 url_pattern="**/manholes/mh-0007/plan",
-                text="推荐处置方案",
+                text="推荐处置组合",
                 timeout=20000,
             )
 
             page.get_by_text("注浆孔位示意").wait_for()
             click_and_wait(
                 page,
-                page.get_by_role("link", name=re.compile(r"进入施工模拟|查看施工模拟")).first,
+                page.get_by_role("link", name=re.compile(r"进入施工监管|查看施工监管")).first,
                 url_pattern="**/manholes/mh-0007/simulation",
-                text="四步施工时间线",
+                text="四步处置时间线",
                 timeout=20000,
             )
 
             click_and_wait(
                 page,
-                page.get_by_role("button", name=re.compile(r"生成验收报告")).first,
+                page.get_by_role("button", name=re.compile(r"生成验收档案")).first,
                 url_pattern="**/manholes/mh-0007/acceptance",
-                text="修复前后指标对比",
+                text="处置前后指标对比",
                 timeout=20000,
             )
 
             click_and_wait(
                 page,
-                page.get_by_role("link", name=re.compile(r"进入路演讲解页")).first,
+                page.get_by_role("link", name=re.compile(r"进入演示脚本")).first,
                 url_pattern="**/demo-script",
-                text="客户路演模式",
+                text="标准演示路径",
                 timeout=20000,
             )
 
             page.get_by_text("推荐井位").wait_for()
-            page.get_by_text("mh-0007").first.wait_for()
+            page.get_by_text("JW-A-0007").first.wait_for()
             browser.close()
     except Exception as exc:
         print(f"FAIL playwright demo flow: {exc}", file=sys.stderr)

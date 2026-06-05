@@ -56,9 +56,9 @@ from services.api.app.workflow import (
 
 
 app = FastAPI(
-    title="井周智修 Demo API",
+    title="谛听监测管理平台 API",
     version="0.1.0",
-    description="Local FastAPI backend for the 井周智修 MVP demo.",
+    description="FastAPI backend for the 谛听管井及周边道路智能监测管理平台演示版.",
 )
 
 DEFAULT_CORS_ORIGINS = [
@@ -668,7 +668,7 @@ def get_demo_script(script_id: str = "default", audience: str = "executive") -> 
     return DemoScript(
         scriptId=script_id,
         audience=audience,
-        title="井周智修客户路演脚本",
+        title="谛听监测管理平台演示脚本",
         manholeId=manhole_id,
         scenes=[
             DemoScene(
@@ -706,4 +706,4 @@ def get_demo_script(script_id: str = "default", audience: str = "executive") -> 
 
 @app.get("/")
 def root() -> dict[str, str]:
-    return {"name": "井周智修 Demo API", "docs": "/docs", "openapi": "/openapi.json"}
+    return {"name": "谛听监测管理平台 API", "docs": "/docs", "openapi": "/openapi.json"}

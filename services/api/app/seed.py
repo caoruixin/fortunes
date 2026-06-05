@@ -173,7 +173,7 @@ def build_seed_manholes() -> list[ManholeDetail]:
                 lastInspectionAt=inspected_at,
                 lastRepairAt=last_repair_at,
                 repairCount=1 + (index % 4),
-                ownerUnit="井周智修示范项目组",
+                ownerUnit="谛听示范项目组",
                 coverType="重型防沉降复合井盖",
                 complaintCount=inspection.complaintCount,
                 latestInspection=inspection,

@@ -23,19 +23,19 @@ export default async function ManholeDetailPage({ params }: Props) {
   return (
     <div className="stack-lg">
       <FlowHeader
-        title="单井病害详情"
-        subtitle="用现场指标、雷达预览和历史维修说明为什么这座井需要进入 AI 诊断。"
+        title="单井监测档案"
+        subtitle="汇集现场指标、地下异常、历史处置与当前告警原因，形成平台级一井一档。"
         manhole={manhole}
         currentStep="detail"
         nextHref={`/manholes/${manhole.id}/diagnosis?autorun=1`}
-        nextLabel="下一步演示：开始 AI 诊断"
+        nextLabel="下一步演示：启动 AI 风险研判"
       />
 
       <div className="two-column">
         <Panel>
           <div className="detail-hero">
             <div className="detail-hero-main">
-              <SectionTitle title={`${manhole.code} / ${manhole.roadName}`} eyebrow="Manhole Archive" />
+              <SectionTitle title={`${manhole.code} / ${manhole.roadName}`} eyebrow="Asset Archive" />
               <p className="flow-subtitle">
                 {manhole.district} / {getPipelineLabel(manhole.pipeType)} / {manhole.coverType}
               </p>
@@ -47,17 +47,17 @@ export default async function ManholeDetailPage({ params }: Props) {
 
           <div className="summary-grid">
             <div className="summary-card">
-              <span className="summary-label">进入诊断证据 1</span>
+              <span className="summary-label">井盖高差</span>
               <strong className="summary-value">{manhole.inspection.heightDiffMm} mm</strong>
               <span className="summary-caption">井盖高差已超过验收目标范围</span>
             </div>
             <div className="summary-card">
-              <span className="summary-label">进入诊断证据 2</span>
+              <span className="summary-label">声振异常</span>
               <strong className="summary-value">{manhole.inspection.noisePeakDb} dB</strong>
               <span className="summary-caption">车辆通过存在跳动与异响风险</span>
             </div>
             <div className="summary-card">
-              <span className="summary-label">进入诊断证据 3</span>
+              <span className="summary-label">地下异常区</span>
               <strong className="summary-value">{manhole.inspection.radarAnomalyAreaM2} m2</strong>
               <span className="summary-caption">雷达异常区已形成连续结构风险</span>
             </div>
@@ -108,7 +108,7 @@ export default async function ManholeDetailPage({ params }: Props) {
             </div>
             <div className="page-actions-inline">
               <Link href={`/manholes/${manhole.id}/diagnosis?autorun=1`} className="button button-primary">
-                下一步演示：开始 AI 诊断
+                下一步演示：启动 AI 风险研判
               </Link>
               <Link href="/map" className="button button-ghost">
                 返回地图

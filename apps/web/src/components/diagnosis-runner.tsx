@@ -11,10 +11,10 @@ import { DataList, ErrorState, Panel, SectionTitle, StagePill } from "@/componen
 import { getDiseaseLabel } from "@/lib/mock-data";
 
 const progressMessages = [
-  "正在识别井周裂缝与沉陷盆…",
+  "正在融合井盖传感、巡检影像与历史工单…",
   "正在解析雷达异常反射与深度分层…",
-  "正在匹配盖座声振与历史维修记录…",
-  "正在生成确定性诊断结果与工法建议…"
+  "正在匹配盖座声振、沉陷指标与维修记录…",
+  "正在生成 AI 风险研判结果与处置建议…"
 ];
 
 export function DiagnosisRunner({
@@ -75,7 +75,7 @@ export function DiagnosisRunner({
         setDiagnosis(result);
       });
     } catch (runError) {
-      setError(runError instanceof Error ? runError.message : "诊断生成失败");
+      setError(runError instanceof Error ? runError.message : "研判生成失败");
     } finally {
       window.clearInterval(timer);
       setProgressIndex(progressMessages.length - 1);
@@ -88,7 +88,7 @@ export function DiagnosisRunner({
     <div className="stack-lg">
       <div className="page-actions-inline">
         <button type="button" className="button button-primary" onClick={() => void runDiagnosis()} disabled={isRunning}>
-          {isRunning ? "AI 分析中…" : diagnosis ? "重新执行诊断" : "开始 AI 诊断"}
+          {isRunning ? "AI 研判中…" : diagnosis ? "重新生成研判结果" : "启动 AI 风险研判"}
         </button>
         {diagnosis && !isRunning ? (
           <CreatePlanButton manholeId={manhole.id} diagnosisVersion={diagnosis.diagnosisVersion} />
@@ -96,7 +96,7 @@ export function DiagnosisRunner({
       </div>
 
       <Panel>
-        <SectionTitle title="诊断进度" eyebrow="AI Pipeline" />
+        <SectionTitle title="研判进度" eyebrow="AI Pipeline" />
         <div className="progress-stack">
           {progressMessages.map((message, index) => (
             <div
@@ -112,7 +112,7 @@ export function DiagnosisRunner({
       </Panel>
 
       {error ? (
-        <ErrorState title="诊断生成失败" description={error} />
+        <ErrorState title="研判生成失败" description={error} />
       ) : null}
 
       {diagnosis ? (
@@ -120,14 +120,14 @@ export function DiagnosisRunner({
           <Panel className="hero-banner">
             <div className="hero-banner-head">
               <div>
-                <p className="eyebrow">Diagnosis Summary</p>
+                <p className="eyebrow">AI Assessment</p>
                 <h2>
                   {diagnosis.diseaseLevel} 级 / 风险评分 {diagnosis.riskScore}
                 </h2>
                 <p className="flow-subtitle">{diagnosis.summary}</p>
               </div>
               <StagePill tone={diagnosis.requiresReview ? "warning" : "success"}>
-                {diagnosis.requiresReview ? "需复核后再定方案" : "已可进入维修方案"}
+                {diagnosis.requiresReview ? "需复核后再定方案" : "已生成处置建议"}
               </StagePill>
             </div>
             <div className="summary-grid">
@@ -150,7 +150,7 @@ export function DiagnosisRunner({
               </div>
               <div className="summary-card">
                 <span className="summary-label">建议动作</span>
-                <strong className="summary-value">{diagnosis.requiresReview ? "先复核" : "生成方案"}</strong>
+                <strong className="summary-value">{diagnosis.requiresReview ? "先复核" : "生成工单"}</strong>
                 <span className="summary-caption">{diagnosis.recommendedStrategy}</span>
               </div>
             </div>
@@ -158,12 +158,12 @@ export function DiagnosisRunner({
 
           <div className="two-column">
             <Panel>
-            <SectionTitle title="地下病害可视化" eyebrow="Diagnosis View" />
+            <SectionTitle title="地下病害可视化" eyebrow="Assessment View" />
             <DiagnosisVisual diagnosis={diagnosis} />
             </Panel>
             <Panel>
               <SectionTitle
-                title="诊断结论"
+                title="研判结论"
                 eyebrow="Result"
                 action={<StagePill tone={diagnosis.requiresReview ? "warning" : "success"}>{diagnosis.requiresReview ? "需复核" : "可进入方案"}</StagePill>}
               />
@@ -192,8 +192,8 @@ export function DiagnosisRunner({
         </>
       ) : (
         <Panel className="state-panel">
-          <h3>等待开始 AI 诊断</h3>
-          <p>本页将把井周地下病害转成可解释的等级、异常分区和工法建议。</p>
+          <h3>等待启动 AI 风险研判</h3>
+          <p>本页将把监测与巡检证据转成可解释的等级、异常分区和处置建议。</p>
         </Panel>
       )}
     </div>

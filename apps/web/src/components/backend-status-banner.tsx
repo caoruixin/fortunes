@@ -49,7 +49,7 @@ export function BackendStatusBanner() {
   return (
     <div className="backend-banner" role="status" aria-live="polite">
       <strong>{BACKEND_SERVICE_HINT}</strong>
-      <span>当前页面会优先保留固定演示路径，等后端恢复后可自动切回 API 数据。</span>
+      <span>演示人员可继续按标准路径讲解，系统会在服务恢复后自动刷新平台数据。</span>
     </div>
   );
 }

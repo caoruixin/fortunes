@@ -26,18 +26,18 @@ export default async function PlanPage({ params }: Props) {
   return (
     <div className="stack-lg">
       <FlowHeader
-        title="维修方案"
-        subtitle="把病害等级、深度和异常分区转成可执行工法、材料和施工参数。"
+        title="处置方案"
+        subtitle="把 AI 研判结果转成可派发工单，明确处置组合、材料、孔位、工期和开放交通目标。"
         manhole={manhole}
         currentStep="plan"
         prevHref={`/manholes/${manhole.id}/diagnosis`}
         nextHref={`/manholes/${manhole.id}/simulation`}
-        nextLabel="下一步演示：查看施工模拟"
+        nextLabel="下一步演示：查看施工监管"
       />
 
       <div className="summary-grid">
         <div className="summary-card">
-          <span className="summary-label">推荐工法</span>
+          <span className="summary-label">推荐处置组合</span>
           <strong className="summary-value">{plan.recommendedMethods.length} 项</strong>
           <span className="summary-caption">{plan.recommendedMethods.map(getMethodLabel).join(" / ")}</span>
         </div>
@@ -47,7 +47,7 @@ export default async function PlanPage({ params }: Props) {
           <span className="summary-caption">控制分级注浆并同步监测抬升</span>
         </div>
         <div className="summary-card">
-          <span className="summary-label">施工时长</span>
+          <span className="summary-label">预计处置时长</span>
           <strong className="summary-value">{plan.estimatedDurationMinutes} min</strong>
           <span className="summary-caption">适合客户演示“微创快修”优势</span>
         </div>
@@ -61,8 +61,8 @@ export default async function PlanPage({ params }: Props) {
       <div className="two-column">
         <Panel>
           <SectionTitle
-            title="推荐处置方案"
-            eyebrow="Repair Strategy"
+            title="推荐处置组合"
+            eyebrow="Work Order Strategy"
             action={<StagePill tone={diagnosis.requiresReview ? "warning" : "success"}>{diagnosis.requiresReview ? "复核分支" : "微创闭环"}</StagePill>}
           />
           <p className="result-summary">{plan.strategySummary}</p>
@@ -77,7 +77,7 @@ export default async function PlanPage({ params }: Props) {
                 { label: "注浆压力", value: `${plan.pressureRangeMpa[0].toFixed(2)}-${plan.pressureRangeMpa[1].toFixed(2)} MPa` },
                 { label: "注浆总量", value: `${plan.estimatedGroutLiters} L` },
                 { label: "表层恢复", value: `${plan.surfaceRepairAreaM2} m2` },
-                { label: "施工时长", value: `${plan.estimatedDurationMinutes} min` }
+                { label: "处置时长", value: `${plan.estimatedDurationMinutes} min` }
               ]}
             />
             <DataList
@@ -131,7 +131,7 @@ export default async function PlanPage({ params }: Props) {
           </div>
         </Panel>
         <Panel>
-          <SectionTitle title="施工质控与风险提示" eyebrow="Quality Controls" />
+          <SectionTitle title="处置质控与风险提示" eyebrow="Quality Controls" />
           <ul className="demo-step-points">
             {plan.qualityControls.map((item) => (
               <li key={item}>{item}</li>
@@ -144,7 +144,7 @@ export default async function PlanPage({ params }: Props) {
           </ul>
           <div className="page-actions-inline">
             <Link href={`/manholes/${manhole.id}/simulation`} className="button button-primary">
-              下一步演示：进入施工模拟
+              下一步演示：进入施工监管
             </Link>
           </div>
         </Panel>

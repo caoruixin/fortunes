@@ -25,13 +25,13 @@ export default async function AcceptancePage({ params }: Props) {
   return (
     <div className="stack-lg">
       <FlowHeader
-        title="一井一档验收报告"
-        subtitle="用修复前后指标、材料批次、施工记录和复检建议形成可追溯验收闭环。"
+        title="一井一档验收档案"
+        subtitle="用处置前后指标、材料批次、施工记录和复检建议形成可追溯闭环归档。"
         manhole={manhole}
         currentStep="acceptance"
         prevHref={`/manholes/${manhole.id}/simulation`}
         nextHref="/demo-script"
-        nextLabel="下一步演示：进入路演讲解页"
+        nextLabel="下一步演示：进入演示脚本"
       />
 
       <div className="summary-grid">
@@ -47,17 +47,17 @@ export default async function AcceptancePage({ params }: Props) {
           <strong className="summary-value">
             {report.beforeMetrics.flatnessMm} {"->"} {report.afterMetrics.flatnessMm} mm
           </strong>
-          <span className="summary-caption">突出修复前后对比冲击力</span>
+          <span className="summary-caption">突出处置前后对比冲击力</span>
         </div>
         <div className="summary-card">
           <span className="summary-label">异响峰值</span>
           <strong className="summary-value">
             {report.beforeMetrics.noisePeakDb} {"->"} {report.afterMetrics.noisePeakDb} dB
           </strong>
-          <span className="summary-caption">客户可直接理解“异常冲击声已消失”</span>
+          <span className="summary-caption">验收状态下无明显跳动、空响和异常冲击声</span>
         </div>
         <div className="summary-card">
-          <span className="summary-label">开放交通</span>
+          <span className="summary-label">交通恢复</span>
           <strong className="summary-value">{report.reopenTrafficAt}</strong>
           <span className="summary-caption">保持对外承诺克制且可验收</span>
         </div>
@@ -66,8 +66,8 @@ export default async function AcceptancePage({ params }: Props) {
       <Panel className="report-sheet">
         <div className="report-head">
           <div>
-            <p className="eyebrow">Acceptance Report</p>
-            <h2>{manhole.code} 检查井验收档案</h2>
+            <p className="eyebrow">Archive Report</p>
+            <h2>{manhole.code} 检查井闭环归档</h2>
             <p className="report-note">
               {manhole.roadName} / {manhole.district} / {getPipelineLabel(manhole.pipeType)}
             </p>
@@ -101,20 +101,20 @@ export default async function AcceptancePage({ params }: Props) {
           </div>
           <div>
             <span>验收状态</span>
-            <strong>无明显跳动、空响和异常冲击声</strong>
+            <strong>验收状态下无明显跳动、空响和异常冲击声</strong>
           </div>
         </div>
 
         <div className="report-grid">
           <div className="stack-lg">
             <div>
-              <SectionTitle title="修复前后指标对比" eyebrow="Before / After" />
+              <SectionTitle title="处置前后指标对比" eyebrow="Before / After" />
               <table className="report-table">
                 <thead>
                   <tr>
                     <th>指标</th>
-                    <th>修复前</th>
-                    <th>修复后</th>
+                    <th>处置前</th>
+                    <th>处置后</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -151,10 +151,10 @@ export default async function AcceptancePage({ params }: Props) {
             </div>
 
             <div>
-              <SectionTitle title="诊断与施工摘要" eyebrow="Summary" />
+              <SectionTitle title="研判与处置摘要" eyebrow="Summary" />
               <ul className="report-list">
                 <li>
-                  <strong>诊断结论</strong>
+                  <strong>研判结论</strong>
                   <p>{report.diagnosisSummary}</p>
                 </li>
                 <li>
@@ -162,7 +162,7 @@ export default async function AcceptancePage({ params }: Props) {
                   <p>{report.repairPlanSummary}</p>
                 </li>
                 <li>
-                  <strong>施工记录</strong>
+                  <strong>处置记录</strong>
                   <p>{report.constructionRecords.join("；")}</p>
                 </li>
               </ul>

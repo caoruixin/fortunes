@@ -10,11 +10,11 @@ import { GradePill, Panel, RiskPill, SectionTitle } from "@/components/ui";
 import { formatNumber } from "@/lib/utils";
 
 const riskOptions: Array<{ label: string; value: RiskLevel | "all" }> = [
-  { label: "全部风险", value: "all" },
-  { label: "高风险", value: "high" },
-  { label: "极高风险", value: "critical" },
-  { label: "中风险", value: "medium" },
-  { label: "低风险", value: "low" }
+  { label: "全部告警", value: "all" },
+  { label: "二级告警", value: "high" },
+  { label: "三级报警", value: "critical" },
+  { label: "持续观察", value: "medium" },
+  { label: "正常监测", value: "low" }
 ];
 
 export function MapWorkspace({ features }: { features: MapFeature[] }) {
@@ -117,11 +117,11 @@ export function MapWorkspace({ features }: { features: MapFeature[] }) {
   return (
     <div className="map-grid">
       <Panel className="map-sidebar">
-        <SectionTitle title="风险筛选" eyebrow="Map Filters" />
+        <SectionTitle title="告警筛选" eyebrow="GIS Filters" />
         {demoFeature ? (
           <div className="demo-route-card">
-            <p className="eyebrow">Fixed Demo Route</p>
-            <strong>{demoFeature.code} 高风险演示井</strong>
+            <p className="eyebrow">Priority Alert Route</p>
+            <strong>{demoFeature.code} 二级橙色告警井</strong>
             <span>
               {demoFeature.roadName} / C 级病害 / 评分 {demoFeature.riskScore}
             </span>
@@ -132,7 +132,7 @@ export function MapWorkspace({ features }: { features: MapFeature[] }) {
         ) : null}
         <div className="filter-stack">
           <label className="field">
-            <span>检查井检索</span>
+            <span>管井检索</span>
             <input
               value={search}
               onChange={(event) => setSearch(event.target.value)}
@@ -140,7 +140,7 @@ export function MapWorkspace({ features }: { features: MapFeature[] }) {
             />
           </label>
           <label className="field">
-            <span>风险等级</span>
+            <span>告警等级</span>
             <select value={riskLevel} onChange={(event) => setRiskLevel(event.target.value as RiskLevel | "all")}>
               {riskOptions.map((option) => (
                 <option key={option.value} value={option.value}>
@@ -150,14 +150,14 @@ export function MapWorkspace({ features }: { features: MapFeature[] }) {
             </select>
           </label>
           <label className="field">
-            <span>诊断状态</span>
+            <span>研判状态</span>
             <select
               value={diagnosisFilter}
               onChange={(event) => setDiagnosisFilter(event.target.value as "all" | "yes" | "no")}
             >
               <option value="all">全部状态</option>
-              <option value="yes">已诊断</option>
-              <option value="no">未诊断</option>
+              <option value="yes">已研判</option>
+              <option value="no">待研判</option>
             </select>
           </label>
         </div>
@@ -173,7 +173,7 @@ export function MapWorkspace({ features }: { features: MapFeature[] }) {
               <div className="map-list-item-top">
                 <strong>
                   {feature.code}
-                  {feature.id === DEMO_MANHOLE_ID ? <span className="demo-badge">固定演示</span> : null}
+              {feature.id === DEMO_MANHOLE_ID ? <span className="demo-badge">重点告警</span> : null}
                 </strong>
                 <RiskPill value={feature.riskLevel} />
               </div>
@@ -185,8 +185,8 @@ export function MapWorkspace({ features }: { features: MapFeature[] }) {
           ))}
           {ordered.length === 0 ? (
             <div className="empty-inline">
-              <strong>当前筛选条件下无检查井</strong>
-              <p>请清除风险或诊断筛选后重试。</p>
+              <strong>当前筛选条件下无管井</strong>
+              <p>请清除告警或研判筛选后重试。</p>
             </div>
           ) : null}
         </div>
@@ -194,9 +194,9 @@ export function MapWorkspace({ features }: { features: MapFeature[] }) {
 
       <Panel className="map-stage">
         <SectionTitle
-          title="城市道路风险地图"
-          eyebrow="Risk Map"
-          action={<div className="map-legend">风险色: 绿 / 黄 / 橙 / 红</div>}
+          title="全域管井告警态势"
+          eyebrow="GIS Alert Map"
+          action={<div className="map-legend">告警色: 绿 / 黄 / 橙 / 红</div>}
         />
         <div className="map-canvas">
           <div className="map-road map-road-h" />
@@ -216,15 +216,15 @@ export function MapWorkspace({ features }: { features: MapFeature[] }) {
               <span />
             </button>
           ))}
-          <div className="map-note">示意地图采用内置 SVG 坐标面板，避免本机演示依赖外部底图。</div>
+          <div className="map-note">示意 GIS 面板展示管井位置、告警等级和处置状态，不依赖外部底图。</div>
         </div>
       </Panel>
 
       <Panel className="map-drawer">
-        <SectionTitle title={selected ? "选中井概览" : "待选检查井"} eyebrow="Selection" />
+        <SectionTitle title={selected ? "选中告警概览" : "待选管井"} eyebrow="Selection" />
         {selected ? (
           <div className="drawer-stack">
-            <div className="drawer-photo">现场照片占位</div>
+            <div className="drawer-photo">巡检影像 / 雷达摘要占位</div>
             <div className="drawer-head">
               <div>
                 <h3>{selected.code}</h3>
@@ -240,35 +240,35 @@ export function MapWorkspace({ features }: { features: MapFeature[] }) {
             </p>
             {selected.id === DEMO_MANHOLE_ID ? (
               <div className="drawer-callout">
-                <strong>固定演示井</strong>
+                <strong>重点二级告警井</strong>
                 <p>
-                  建议从这座井开始讲解，再按“详情 {"->"} AI 诊断 {"->"} 维修方案 {"->"} 施工模拟 {"->"} 验收报告”推进。
+                  建议从这座井开始讲解，再按“一井一档 {"->"} AI研判 {"->"} 处置方案 {"->"} 施工监管 {"->"} 验收归档”推进。
                 </p>
               </div>
             ) : null}
             <dl className="drawer-stats">
               <div>
-                <dt>风险评分</dt>
+                <dt>告警评分</dt>
                 <dd>{formatNumber(selected.riskScore)}</dd>
               </div>
               <div>
-                <dt>最近状态</dt>
-                <dd>{selected.hasDiagnosis ? "已完成诊断" : "待诊断"}</dd>
+                <dt>工单状态</dt>
+                <dd>{selected.hasDiagnosis ? "已完成研判" : "待 AI 研判"}</dd>
               </div>
             </dl>
             <div className="drawer-actions">
               <Link href={`/manholes/${selected.id}`} className="button button-primary">
-                下一步演示：进入单井详情
+                下一步演示：进入一井一档
               </Link>
               <Link href={`/manholes/${selected.id}/diagnosis?autorun=1`} className="button button-secondary">
-                直接查看诊断
+                直接查看 AI 研判
               </Link>
             </div>
           </div>
         ) : (
           <div className="empty-inline">
-            <strong>地图无可选井位</strong>
-            <p>当前筛选下没有可展示的检查井。</p>
+            <strong>地图无可选管井</strong>
+            <p>当前筛选下没有可展示的管井告警。</p>
           </div>
         )}
       </Panel>

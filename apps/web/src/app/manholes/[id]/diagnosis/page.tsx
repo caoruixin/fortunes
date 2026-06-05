@@ -24,8 +24,8 @@ export default async function DiagnosisPage({ params, searchParams }: Props) {
   return (
     <div className="stack-lg">
       <FlowHeader
-        title="AI 诊断"
-        subtitle="通过确定性 Mock AI 将井周地下病害转成可解释的异常分区、等级和工法建议。"
+        title="AI 风险研判"
+        subtitle="融合巡检、声振和雷达异常，生成可解释、可复核的风险等级、异常分区和处置建议。"
         manhole={manhole}
         currentStep="diagnosis"
         prevHref={`/manholes/${manhole.id}`}

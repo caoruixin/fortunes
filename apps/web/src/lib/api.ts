@@ -44,7 +44,7 @@ type RawObject = Record<string, unknown>;
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/$/, "");
 const USE_MOCK = process.env.NEXT_PUBLIC_USE_MOCK !== "false" && !API_BASE;
 const DEFAULT_DATE = "2026-06-02T10:30:00+08:00";
-export const BACKEND_SERVICE_HINT = "请先启动后端服务。当前页面将使用内置示范数据继续演示。";
+export const BACKEND_SERVICE_HINT = "平台数据同步暂时不可用。当前页面将保留标准演示路径，待服务恢复后自动刷新。";
 
 class ApiRequestError extends Error {
   constructor(
@@ -264,6 +264,50 @@ function diseaseFromDefect(defectType: string): PrimaryDisease {
   return "frameLooseness";
 }
 
+function defectAreaLabel(value: string, fallback: string) {
+  const labels: Record<string, string> = {
+    north_ring: "北侧井圈承压区",
+    south_ring: "南侧井圈承压区",
+    east_ring: "东侧井圈承压区",
+    west_ring: "西侧井圈承压区",
+    cover_seat: "盖座接触区",
+    west_base: "西侧基层异常区",
+    east_base: "东侧基层异常区",
+    southeast_void: "东南侧疑似脱空区",
+    previous_repair_ring: "既往修补环带",
+    pipe_joint: "管线接口影响区"
+  };
+  return labels[value] ?? fallback;
+}
+
+function simulationStepCopy(value: string, fallback: string) {
+  const copies: Record<string, string> = {
+    hole_layout: "按 AI 研判的异常分区完成孔位放样，避开井筒和管线接口。",
+    grout_diffusion: "小流量、多轮次、低压注浆，同步监测压力、流量和路面抬升。",
+    seat_locking: "完成盖座限位、承压面锁固和井盖标高复核。",
+    surface_restore: "采用快硬材料恢复井周表层并进入开放交通倒计时。"
+  };
+  return copies[value] ?? fallback;
+}
+
+function demoOwnerName(value: string) {
+  const legacyName = "井周" + "智修";
+  return value.includes(legacyName) ? value.replace(legacyName, "谛听") : value;
+}
+
+function photoAssetLabels(values: unknown[], code: string) {
+  if (values.length === 0) {
+    return [`${code} 现场照片 1`, `${code} 井周巡检照片`, `${code} 雷达扫测点位`];
+  }
+  return values.map((value, index) => {
+    const text = String(value);
+    if (text.startsWith("/assets/")) {
+      return `${code} 现场照片 ${index + 1}`;
+    }
+    return text;
+  });
+}
+
 function normalizeManholeDetail(rawValue: unknown): ManholeDetail {
   const raw = asRecord(rawValue);
   const latestInspection = asRecord(raw.latestInspection);
@@ -281,7 +325,7 @@ function normalizeManholeDetail(rawValue: unknown): ManholeDetail {
     manholeType: textValue(raw, "manholeType", "圆形检查井"),
     coverType: textValue(raw, "coverType", "球墨铸铁防沉降井盖"),
     trafficLevel: trafficLevelValue(raw.trafficLevel),
-    owner: textValue(raw, "ownerUnit", textValue(raw, "owner", "市政道路养护中心")),
+    owner: demoOwnerName(textValue(raw, "ownerUnit", textValue(raw, "owner", "市政道路养护中心"))),
     location: locationValue(raw.location),
     riskScore: numberValue(raw, "riskScore"),
     riskLevel: riskLevelValue(raw.riskLevel),
@@ -304,22 +348,22 @@ function normalizeManholeDetail(rawValue: unknown): ManholeDetail {
       suspectedVoidDepthMinCm: numberValue(latestInspection, "voidDepthMinCm"),
       suspectedVoidDepthMaxCm: numberValue(latestInspection, "voidDepthMaxCm"),
       surfaceDamageLevel: surfaceDamageLevelValue(raw.surfaceDamageLevel),
-      radarPreviewLabel: textValue(latestInspection, "radarPreviewAsset", "GPR 异常反射预览"),
+      radarPreviewLabel: "GPR 异常反射预览",
       gprSummary: textValue(
         latestInspection,
         "gprSummary",
-        diseaseLevel === "D" ? "深层异常连续，建议复核。" : "井周局部异常反射，建议进入 AI 诊断。"
+        diseaseLevel === "D" ? "深层异常连续，建议复核。" : "井周局部异常反射，建议进入 AI 风险研判。"
       ),
-      photoAssets: asArray(latestInspection.surfacePhotoUrls).map(String)
+      photoAssets: photoAssetLabels(asArray(latestInspection.surfacePhotoUrls), textValue(raw, "code", id))
     },
     history: Array.from({ length: Math.max(1, repairCount) }, (_, index) => ({
       occurredAt: index === 0 ? textValue(raw, "lastRepairAt", DEFAULT_DATE) : DEFAULT_DATE,
       action: index === 0 ? "井周常规修补" : "复检记录",
       note: index === 0 ? "历史维修后仍存在声振或平整度异常。" : "纳入示范片区复检。"
     })),
-    latestDiagnosisSummary: asRecord(raw.diagnosis).diagnosisVersion ? "已生成 AI 诊断" : undefined,
-    latestPlanSummary: asRecord(raw.plan).planVersion ? "已生成维修方案" : undefined,
-    latestAcceptanceSummary: asRecord(raw.acceptance).acceptanceVersion ? "已生成验收报告" : undefined
+    latestDiagnosisSummary: asRecord(raw.diagnosis).diagnosisVersion ? "已生成 AI 风险研判" : undefined,
+    latestPlanSummary: asRecord(raw.plan).planVersion ? "已生成处置方案" : undefined,
+    latestAcceptanceSummary: asRecord(raw.acceptance).acceptanceVersion ? "已生成验收档案" : undefined
   };
 }
 
@@ -357,7 +401,7 @@ function normalizeDiagnosis(rawValue: unknown): Diagnosis {
     const polygon = asArray(defect.polygon).map(localPointValue);
     return {
       id: `${textValue(raw, "diagnosisVersion", "diag")}-zone-${index + 1}`,
-      zoneName: textValue(defect, "areaLabel", `异常区 ${index + 1}`),
+      zoneName: defectAreaLabel(textValue(defect, "areaLabel"), `异常区 ${index + 1}`),
       disease,
       confidence: numberValue(defect, "confidence", numberValue(raw, "confidence", 0.82)),
       depthMinCm: numberValue(defect, "depthMinCm"),
@@ -370,7 +414,7 @@ function normalizeDiagnosis(rawValue: unknown): Diagnosis {
   const depths = findings.flatMap((finding) => [finding.depthMinCm, finding.depthMaxCm]);
   const primaryDiseases = Array.from(new Set(findings.map((finding) => finding.disease)));
   const ruleFactors: RuleFactor[] = [
-    { label: "风险评分", scoreImpact: numberValue(raw, "riskScore"), evidence: "由高差、平整度、声振、雷达异常、空洞深度、维修次数和交通等级加权得到。" },
+    { label: "综合评分依据", scoreImpact: numberValue(raw, "riskScore"), evidence: "由高差、平整度、声振、雷达异常、空洞深度、维修次数和交通等级加权得到。" },
     ...findings.slice(0, 3).map((finding) => ({
       label: finding.zoneName,
       scoreImpact: Math.round(finding.confidence * 10),
@@ -393,7 +437,7 @@ function normalizeDiagnosis(rawValue: unknown): Diagnosis {
     ruleFactors,
     recommendedStrategy: textValue(raw, "summary", textValue(recommendation, "recommendedMethod")),
     requiresReview: diseaseLevel === "D" || textValue(recommendation, "recommendedMethod").includes("cctv"),
-    summary: textValue(raw, "summary", "已生成确定性 Mock AI 诊断。"),
+    summary: textValue(raw, "summary", "已生成可解释的 AI 风险研判结果。"),
     generatedAt: textValue(raw, "generatedAt", DEFAULT_DATE)
   };
 }
@@ -479,8 +523,8 @@ function normalizeSimulation(rawValue: unknown, plan: RepairPlan): ConstructionS
       const step = asRecord(item);
       return {
         id: textValue(step, "stepCode", `step-${index + 1}`),
-        title: textValue(step, "title", `施工步骤 ${index + 1}`),
-        detail: textValue(step, "visualType", "按方案执行并记录质控数据。"),
+        title: textValue(step, "title", `处置步骤 ${index + 1}`),
+        detail: simulationStepCopy(textValue(step, "visualType"), "按处置方案执行并记录质控数据。"),
         durationMinutes: numberValue(step, "estimatedDurationMinutes"),
         status: "completed" as const
       };
@@ -518,8 +562,8 @@ function normalizeAcceptance(rawValue: unknown, diagnosis?: Diagnosis, plan?: Re
     reportId: textValue(raw, "reportNo", textValue(raw, "acceptanceVersion", "acc-v1")),
     acceptanceVersion: textValue(raw, "acceptanceVersion", "acc-v1"),
     manholeId: textValue(raw, "manholeId", plan?.manholeId),
-    diagnosisSummary: textValue(raw, "diagnosisSummary", diagnosis?.summary ?? "已归档 AI 诊断摘要。"),
-    repairPlanSummary: textValue(raw, "repairPlanSummary", plan?.strategySummary ?? "已归档维修方案摘要。"),
+    diagnosisSummary: textValue(raw, "diagnosisSummary", diagnosis?.summary ?? "已归档 AI 风险研判摘要。"),
+    repairPlanSummary: textValue(raw, "repairPlanSummary", plan?.strategySummary ?? "已归档处置方案摘要。"),
     constructionRecords: asArray(raw.constructionRecords).map(String),
     materialBatches: rawBatches.map((batch) => ({
       batchNo: textValue(batch, "batchNo"),
@@ -530,7 +574,7 @@ function normalizeAcceptance(rawValue: unknown, diagnosis?: Diagnosis, plan?: Re
     beforeMetrics,
     afterMetrics,
     acceptanceStatus: textValue(raw, "conclusion").includes("review") ? "conditionalReview" : "passed",
-    reopenTrafficAt: textValue(raw, "openTrafficAt", plan?.openTrafficHours ? `修复后 ${plan.openTrafficHours} 小时` : "待复核"),
+    reopenTrafficAt: plan?.openTrafficHours ? `修复完成后 ${plan.openTrafficHours} 小时开放交通` : textValue(raw, "openTrafficAt", "待复核"),
     recurrenceRisk: `${Math.round(numberValue(recurrence, "risk12Months") * 100)}% / 12 个月`,
     followUpRecommendation: `建议 ${textValue(raw, "recommendedNextInspectionAt", "3 个月后")} 复检高差、平整度和声振状态。`,
     generatedAt: textValue(raw, "generatedAt", DEFAULT_DATE)
@@ -575,8 +619,8 @@ function normalizeDashboardSummary(rawValue: unknown, manholes: ManholeDetail[])
       {
         id: "act-api-1",
         happenedAt: DEFAULT_DATE,
-        title: "本地 API 已生成演示数据",
-        detail: "诊断、方案、施工模拟和验收报告可按主流程实时生成。"
+        title: "示范片区完成监测数据同步",
+        detail: "AI研判、处置方案、施工监管和验收归档可按主流程实时生成。"
       }
     ]
   };

@@ -30,13 +30,13 @@ export default async function SimulationPage({ params }: Props) {
   return (
     <div className="stack-lg">
       <FlowHeader
-        title="施工模拟"
-        subtitle="展示精准布孔、低压分级注浆、井座锁固调平和快硬恢复四步施工过程。"
+        title="施工过程监管"
+        subtitle="展示处置工单执行过程中的布孔、注浆、锁固、快硬恢复和遥测回放。"
         manhole={manhole}
         currentStep="simulation"
         prevHref={`/manholes/${manhole.id}/plan`}
         nextHref={`/manholes/${manhole.id}/acceptance`}
-        nextLabel="下一步演示：生成验收报告"
+        nextLabel="下一步演示：生成验收档案"
       />
 
       <div className="summary-grid">
@@ -58,13 +58,13 @@ export default async function SimulationPage({ params }: Props) {
         <div className="summary-card">
           <span className="summary-label">开放交通</span>
           <strong className="summary-value">{plan.openTrafficHours} h</strong>
-          <span className="summary-caption">与验收报告口径保持一致</span>
+          <span className="summary-caption">与验收归档口径保持一致</span>
         </div>
       </div>
 
       <div className="two-column">
         <Panel>
-          <SectionTitle title="四步施工时间线" eyebrow="Timeline" />
+          <SectionTitle title="四步处置时间线" eyebrow="Timeline" />
           <div className="timeline-list">
             {simulation.steps.map((step) => (
               <div key={step.id} className="timeline-item">
@@ -84,13 +84,13 @@ export default async function SimulationPage({ params }: Props) {
         </Panel>
 
         <Panel>
-          <SectionTitle title="施工遥测回放" eyebrow="Telemetry Replay" />
+          <SectionTitle title="过程遥测回放" eyebrow="Telemetry Replay" />
           <TelemetryChart simulation={simulation} />
         </Panel>
       </div>
 
       <Panel>
-        <SectionTitle title="预计修复效果" eyebrow="Expected Outcome" />
+        <SectionTitle title="预计处置效果" eyebrow="Expected Outcome" />
         <div className="comparison-grid">
           <div className="comparison-card">
             <span className="summary-label">井盖高差</span>
@@ -118,12 +118,12 @@ export default async function SimulationPage({ params }: Props) {
 
       <div className="two-column">
         <Panel>
-          <SectionTitle title="修复前状态" eyebrow="Before" />
+          <SectionTitle title="处置前状态" eyebrow="Before" />
           <p className="result-summary">{simulation.beforeAfterVisualState.before}</p>
           <div className="drawer-photo">井周沉陷 / 异响 / 雷达异常占位</div>
         </Panel>
         <Panel>
-          <SectionTitle title="修复后状态" eyebrow="After" />
+          <SectionTitle title="处置后状态" eyebrow="After" />
           <p className="result-summary">{simulation.beforeAfterVisualState.after}</p>
           <div className="drawer-photo">承压层恢复 / 交通开放倒计时占位</div>
           <div className="page-actions-inline">
